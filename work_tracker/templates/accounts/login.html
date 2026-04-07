@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Login</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+    <style>
+        /* shake */
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            20%, 60% {
+                transform: translateX(-6px);
+            }
+            40%, 80% {
+                transform: translateX(6px);
+            }
+        }
+
+        .shake {
+            animation: shake .4s linear;
+            animation-fill-mode: both;
+            will-change: transform;
+        }
+
+        /* Toast container: centra horizontalmente */
+        .toast-top-center {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 1rem;
+            z-index: 60;
+            min-width: 18rem;
+            max-width: 36rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+
+<!-- TOASTS: mensajes globales y errores no campo -->
+<div class="toast-top-center space-y-2">
+    {% if messages %}
+        {% for message in messages %}
+            <div
+                class="px-4 py-2 rounded-lg text-sm shadow-md
+                 {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% elif message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-gray-50 text-gray-800 border border-gray-200{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if form.non_field_errors %}
+        {% for err in form.non_field_errors %}
+            <div class="px-4 py-2 rounded-lg text-sm shadow-md bg-red-50 text-red-700 border border-red-200">
+                {{ err }}
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<!-- Card principal -->
+<div class="flex flex-col bg-white rounded-xl shadow-lg p-8 w-80
+              {% if form.errors %}shake{% endif %}">
+    <h1 class="text-xl font-semibold text-gray-700 text-center mb-6">Iniciar sesión</h1>
+
+    <form method="post" class="flex flex-col gap-5">
+        {% csrf_token %}
+
+        {{ form.username }}
+        {{ form.password }}
+
+        <button type="submit"
+                class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 rounded-full transition text-lg">
+            Entrar
+        </button>
+    </form>
+
+    <div class="border-t border-gray-300 my-6"></div>
+
+    <a href="{% url 'register' %}"
+       class="w-fit px-6 self-center bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-full text-center block transition">
+        Crear nuevo usuario
+    </a>
+</div>
+</body>
+</html>

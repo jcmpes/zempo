@@ -1,0 +1,13 @@
+[project]
+name = "work-tracker"
+version = "0.1.0"
+description = "An application that tracks time worked by employees"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "django>=5.1.5",
+    "django-environ>=0.13.0",
+    "gunicorn>=23.0.0",
+    "openpyxl>=3.1.5",
+    "psycopg[binary]>=3.3.3",
+]

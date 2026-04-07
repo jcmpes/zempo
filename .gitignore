@@ -1,0 +1,8 @@
+.env
+postgres-data
+static
+.venv
+.idea
+db
+work_tracker/db
+/work_tracker/db/db.sqlite3

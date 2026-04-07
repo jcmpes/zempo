@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    restart: always
+    env_file: .env
+    volumes:
+      - ./static:/app/static
+    ports:
+      - "0.0.0.0:8002:8000"
+    depends_on:
+      - postgres
+  postgres:
+    container_name: zempo_postgres
+    image: postgres:latest
+    ports:
+      - "0.0.0.0:15500:5432"
+    env_file: .env
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
