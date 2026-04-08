@@ -4,12 +4,15 @@ RUN pip install --no-cache-dir uv
 
 WORKDIR /app
 
+# copy .env in /app/.env
+COPY .env ./
+
 COPY pyproject.toml uv.lock ./
 
-# 👇 instalar deps en el sistema (sin venv)
+# install dependencies in system (no venv)
 RUN uv pip install --system .
 
-# copiar código Django
+# copy django app code
 COPY work_tracker/ /app/
 
 EXPOSE 8000
