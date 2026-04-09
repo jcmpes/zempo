@@ -6,3 +6,4 @@ static
 db
 work_tracker/db
 /work_tracker/db/db.sqlite3
+work_tracker/static/admin

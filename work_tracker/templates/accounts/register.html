@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Usuario</title>
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+{% extends "base.html" %}
 
+{% block title %}App{% endblock %}
+
+{% block extra_head %}
     <style>
         /* shake */
         @keyframes shake {
@@ -37,7 +34,9 @@
             max-width: 36rem;
         }
     </style>
-</head>
+{% endblock %}
+
+{% block content %}
 <body class="bg-gray-100 h-screen flex items-center justify-center">
 
 <!-- TOASTS: mensajes globales y errores no campo -->
@@ -93,5 +92,4 @@
     </a>
 </div>
 
-</body>
-</html>
+{% endblock %}
