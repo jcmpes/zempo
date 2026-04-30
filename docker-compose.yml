@@ -6,7 +6,7 @@ services:
     restart: always
     env_file: .env
     volumes:
-      - ./static:/app/static
+      - ./work_tracker/static:/app/work_tracker/static
     ports:
       - "0.0.0.0:8002:8000"
     depends_on:
