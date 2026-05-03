@@ -1,9 +1,10 @@
+from django.contrib import messages
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import TemplateView
 
-from .forms import UserRegistrationForm, UserLoginForm
+from .forms import UserRegistrationForm, UserLoginForm, OrganizationForm
 
 
 class RegisterView(View):
@@ -33,7 +34,27 @@ class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
 
 
-
-
 class LandingView(TemplateView):
     template_name = "landing.html"
+
+
+class create_organization(View):
+    def get(self, request):
+        form = OrganizationForm()
+
+        return render(request, "accounts/create_org.html", {"form": form})
+
+    def post(self, request):
+        form = OrganizationForm(request.POST)
+
+        if form.is_valid():
+            org = form.save()
+
+            messages.success(request, "Organización creada correctamente")
+
+            return redirect(f"https://{org.slug}.zempo.es")
+
+        else:
+            messages.error(request, "Revisa el formulario")
+
+        return render(request, "accounts/create_org.html", {"form": form})

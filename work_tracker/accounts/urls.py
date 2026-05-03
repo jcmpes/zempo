@@ -12,4 +12,5 @@ urlpatterns = [
          ), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('register/', views.RegisterView.as_view(), name='register'),
+    path("create-org/", views.create_organization.as_view(), name="create_org")
 ]

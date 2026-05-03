@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Crear organización{% endblock %}
+
+{% block extra_head %}
+    <style>
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            20%, 60% {
+                transform: translateX(-6px);
+            }
+            40%, 80% {
+                transform: translateX(6px);
+            }
+        }
+
+        .shake {
+            animation: shake .4s linear;
+            animation-fill-mode: both;
+        }
+
+        .toast-top-center {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 1rem;
+            z-index: 60;
+            min-width: 18rem;
+            max-width: 36rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <!-- TOASTS -->
+    <div class="toast-top-center space-y-2">
+        {% if messages %}
+            {% for message in messages %}
+                <div
+                    class="px-4 py-2 rounded-lg text-sm shadow-md
+                {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% elif message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-gray-50 text-gray-800 border border-gray-200{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if form.non_field_errors %}
+            {% for err in form.non_field_errors %}
+                <div class="px-4 py-2 rounded-lg text-sm shadow-md bg-red-50 text-red-700 border border-red-200">
+                    {{ err }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Card -->
+    <div class="flex flex-col bg-white rounded-xl shadow-lg p-8 w-80
+            {% if form.errors %}shake{% endif %}">
+
+        <h1 class="text-xl font-semibold text-gray-700 text-center mb-6">
+            Nueva organización
+        </h1>
+
+        <form method="post" class="flex flex-col gap-5">
+            {% csrf_token %}
+
+            {{ form.name }}
+
+            {% for error in form.name.errors %}
+                <p class="text-sm text-red-600 mt-1">
+                    {{ form.name.value }} — {{ error }}
+                </p>
+            {% endfor %}
+
+            <button type="submit"
+                    class="w-full bg-green-500 bg-blue-600 text-white font-bold py-3 rounded-full transition text-lg">
+                Crear
+            </button>
+        </form>
+
+        <a href="/" class="mt-5 text-center text-blue-600 hover:underline">
+        Volver
+    </a>
+    </div>
+
+{% endblock %}

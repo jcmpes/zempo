@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 
-from .models import Account
+from .models import Account, Organization
 
 
 class UserLoginForm(AuthenticationForm):
@@ -77,3 +78,23 @@ class UserRegistrationForm(UserCreationForm):
 
         return user
 
+
+class OrganizationForm(forms.ModelForm):
+    class Meta:
+        model = Organization
+        fields = ["name"]
+        widgets = {
+            "name": forms.TextInput(attrs={
+                "class": "w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500",
+                "placeholder": "Nombre de la organización",
+            })
+        }
+
+    def clean_name(self):
+        name = self.cleaned_data["name"]
+        slug = slugify(name)
+
+        if Organization.objects.filter(slug=slug).exists():
+            raise forms.ValidationError("Ese nombre ya está en uso")
+
+        return name
