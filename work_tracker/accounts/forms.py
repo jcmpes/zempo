@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User, Group, Permission
 from django.utils.text import slugify
-from psycopg import transaction
+from django.db import transaction
 
 from .models import Account, Organization
 
