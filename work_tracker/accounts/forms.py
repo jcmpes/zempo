@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group, Permission
 from django.utils.text import slugify
+from psycopg import transaction
 
 from .models import Account, Organization
 
@@ -60,7 +61,11 @@ class UserRegistrationForm(UserCreationForm):
             raise forms.ValidationError("Ese nombre de usuario ya existe")
         return username
 
+    @transaction.atomic
     def save(self, commit=True, organization=None):
+
+        is_first_user = not Account.objects.filter(organization=organization).exists()
+
         user = super().save(commit=commit)
 
         # Marcar usuario como staff para entrar al admin
@@ -73,7 +78,22 @@ class UserRegistrationForm(UserCreationForm):
             # Añadir permisos para ver y editar workperiods y usuarios.
             # El admin está customizado para que los usuarios staff solo
             # puedan editar los detalles de su propio usuario.
-            user.user_permissions.add(25, 26, 27, 28, 14, 16)
+            permissions = Permission.objects.filter(
+                codename__in=[
+                    "change_user",
+                    "view_user",
+                    "add_workperiod",
+                    "change_workperiod",
+                    "delete_workperiod",
+                    "view_workperiod"
+                ]
+            )
+            user.user_permissions.add(*permissions)
+
+            if is_first_user:
+                group, _ = Group.objects.get_or_create(name="organization_admin")
+                user.groups.add(group)
+
             user.save()
 
         return user
