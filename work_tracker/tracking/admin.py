@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
+
 from .models import WorkPeriod
 from .services.excel_export import excel_export
 
@@ -135,10 +136,47 @@ class WorkPeriodAdmin(admin.ModelAdmin):
 
     @staticmethod
     def modify_form(form, request, obj):
+
         form.initial['user'] = request.user.id
-        if not request.user.is_superuser and form.fields.get('user'):
-            form.fields['user'].widget = form.fields['user'].hidden_widget()
+
+        if form.fields.get('user'):
+
+            # ORG ADMIN → puede elegir usuarios de su organización
+            if request.user.account.is_org_admin:
+
+                form.fields['user'].queryset = User.objects.filter(
+                    account__organization=request.user.account.organization
+                )
+
+            # Usuario normal → solo él mismo
+            elif not request.user.is_superuser:
+
+                form.fields['user'].queryset = User.objects.filter(
+                    id=request.user.id
+                )
+
+                form.fields['user'].widget = form.fields['user'].hidden_widget()
+
         return form
+
+    def save_model(self, request, obj, form, change):
+        """
+        Asignar automáticamente la organización
+        al crear/editar un WorkPeriod.
+        """
+
+        if not obj.organization_id:
+
+            # Opción más robusta:
+            # tomar la organización del usuario del workperiod
+            if obj.user_id and hasattr(obj.user, "account"):
+                obj.organization = obj.user.account.organization
+
+            # Sino, del usuario con sesión activa
+            else:
+                obj.organization = request.user.account.organization
+
+        super().save_model(request, obj, form, change)
 
 
 admin.site.register(WorkPeriod, WorkPeriodAdmin)
