@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.admin.sites import NotRegistered
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Permission
 
 from accounts.models import Account
 
@@ -55,24 +56,43 @@ class CustomUserAdmin(UserAdmin):
             # Mostrar solo los campos básicos
             return (
                 (None, {'fields': ('username', 'password')}),
-                ("Información personal", {'fields': ('first_name', 'last_name', 'email')}),
+                (
+                    "Información personal",
+                    {'fields': ('first_name', 'last_name', 'email')}
+                ),
+                (
+                    "Permisos",
+                    {'fields': ('groups', 'user_permissions')}
+                ),
             )
 
         return fieldsets
 
     def get_readonly_fields(self, request, obj=None):
-        # Si NO es superuser, no puede editar campos privilegiados
-        if not request.user.is_superuser:
+        # Superuser puede editar todo
+        if request.user.is_superuser:
+            return super().get_readonly_fields(request, obj)
+
+        # org admin puede editar permisos y grupos
+        if request.user.account.is_org_admin:
             return [
                 'is_superuser',
                 'is_staff',
                 'is_active',
-                'groups',
-                'user_permissions',
                 'last_login',
-                'date_joined'
+                'date_joined',
             ]
-        return super().get_readonly_fields(request, obj)
+
+        # Usuario sencillo no puede editar permisos y grupos
+        return [
+            'is_superuser',
+            'is_staff',
+            'is_active',
+            'groups',
+            'user_permissions',
+            'last_login',
+            'date_joined',
+        ]
 
     # ✅ Qué ve cada usuario
     def get_queryset(self, request):
@@ -97,7 +117,7 @@ class CustomUserAdmin(UserAdmin):
             return True
 
         if request.user.account.is_org_admin:
-            return obj.user.account.organization == request.user.account.organization
+            return obj.account.organization == request.user.account.organization
 
         # Usuarios normales solo pueden editarse a sí mismos
         return obj.id == request.user.id
@@ -109,6 +129,33 @@ class CustomUserAdmin(UserAdmin):
     # ❌ No permitir añadir nuevos usuarios si no es superuser
     def has_add_permission(self, request):
         return request.user.is_superuser
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if (
+                db_field.name == "user_permissions"
+                and not request.user.is_superuser
+        ):
+            excluded_apps = (
+                "accounts",
+                "admin",
+                "contenttypes",
+                "sessions",
+            )
+
+            kwargs["queryset"] = Permission.objects.exclude(
+                content_type__app_label__in=excluded_apps
+            ).exclude(
+                content_type__app_label="auth",
+                codename__in=(
+                    "add_group",
+                    "change_group",
+                    "delete_group",
+                ),
+            )
+
+        return super().formfield_for_manytomany(
+            db_field, request, **kwargs
+        )
 
 
 # Registrar
