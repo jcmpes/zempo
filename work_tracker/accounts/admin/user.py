@@ -50,23 +50,31 @@ class CustomUserAdmin(UserAdmin):
 
     # Ocultar estas secciones para usuarios no superuser
     def get_fieldsets(self, request, obj=None):
-        fieldsets = super().get_fieldsets(request, obj)
+        if request.user.is_superuser:
+            return super().get_fieldsets(request, obj)
 
-        if not request.user.is_superuser:
-            # Mostrar solo los campos básicos
+        # Usuario normal: sin grupos ni permisos
+        if not request.user.account.is_org_admin:
             return (
                 (None, {'fields': ('username', 'password')}),
                 (
                     "Información personal",
                     {'fields': ('first_name', 'last_name', 'email')}
                 ),
-                (
-                    "Permisos",
-                    {'fields': ('groups', 'user_permissions')}
-                ),
             )
 
-        return fieldsets
+        # Admin de organización: puede gestionar grupos/permisos
+        return (
+            (None, {'fields': ('username', 'password')}),
+            (
+                "Información personal",
+                {'fields': ('first_name', 'last_name', 'email')}
+            ),
+            (
+                "Permisos",
+                {'fields': ('groups', 'user_permissions')}
+            ),
+        )
 
     def get_readonly_fields(self, request, obj=None):
         # Superuser puede editar todo
